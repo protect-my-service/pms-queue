@@ -1,0 +1,27 @@
+[type]: [subject]
+# No more than 50 chars. #### 50 chars is here: #
+
+[optional body]
+# Wrap at 72 chars. ################################## which is here: #
+
+[optional footer]
+# Reference an issue by number, e.g. #123
+
+# Types:
+# feat      : New feature
+# fix       : Bug fix
+# docs      : Changes to documentation
+# style     : Changes that do not affect the meaning of the code
+#             (white-space, formatting, missing semi-colons, etc)
+# refactor  : Code change that neither fixes a bug nor adds a feature
+# test      : Adding or editing tests
+# chore     : Changes to the build process or tools and libraries
+
+# Notes:
+# - Start the `subject` in lowercase
+# - Do not end the `subject` with a period
+# - Separate `subject` from `body` with a blank line
+# - Separate `footer` from `body` with a blank line
+# - Use imperative mood in `subject`
+# - Use the body to explain "what" and "why", not the "how"
+# - Can use multiple lines with "-" for bullet points in `body`
