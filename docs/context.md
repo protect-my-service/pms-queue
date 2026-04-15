@@ -29,7 +29,7 @@ When the queue fills up, the system pushes back with `429 Too Many Requests` ins
 |---|---|---|
 | 1 | Spring Boot basics — REST endpoint, JSON deserialization | Done |
 | 2 | In-memory queue — producer/consumer, backpressure with BlockingQueue | Done |
-| 3 | Persistence — store processed events with Spring Data JPA + H2 | Pending |
+| 3 | Persistence — store processed events with Spring Data JPA + H2 | Done |
 | 4 | External queue — replace BlockingQueue with Redis Streams | Pending |
 | 5 | Backpressure patterns — rate limiting, circuit breaker, Retry-After | Pending |
 

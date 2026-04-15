@@ -8,9 +8,11 @@ import jakarta.annotation.PostConstruct;
 public class EventWorker {
 
     private final EventQueue eventQueue;
+    private final EventRepository eventRepository;
 
-    public EventWorker(EventQueue eventQueue) {
+    public EventWorker(EventQueue eventQueue, EventRepository eventRepository) {
         this.eventQueue = eventQueue;
+        this.eventRepository = eventRepository;
     }
 
     @PostConstruct
@@ -37,6 +39,7 @@ public class EventWorker {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        System.out.println("[worker] processed: " + event);
+        eventRepository.save(event);
+        System.out.println("[worker] saved: " + event);
     }
 }
