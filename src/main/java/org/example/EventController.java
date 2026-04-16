@@ -15,21 +15,18 @@ import java.util.List;
 @RequestMapping("/events")
 public class EventController {
 
-    private final EventQueue eventQueue;
+    private final RedisEventProducer producer;
     private final EventRepository eventRepository;
 
-    public EventController(EventQueue eventQueue, EventRepository eventRepository) {
-        this.eventQueue = eventQueue;
+    public EventController(RedisEventProducer producer, EventRepository eventRepository) {
+        this.producer = producer;
         this.eventRepository = eventRepository;
     }
 
     @PostMapping
     public ResponseEntity<String> receiveEvent(@RequestBody Event event) {
         event.setReceivedAt(Instant.now());
-        boolean accepted = eventQueue.offer(event);
-        if (!accepted) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Queue full");
-        }
+        producer.publish(event);
         return ResponseEntity.accepted().body("Accepted");
     }
 
