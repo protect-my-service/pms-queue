@@ -18,15 +18,12 @@ public class RedisEventConsumer implements StreamListener<String, ObjectRecord<S
 
     private final StringRedisTemplate redisTemplate;
     private final StreamMessageListenerContainer<String, ObjectRecord<String, Event>> listenerContainer;
-    private final EventRepository eventRepository;
 
     public RedisEventConsumer(
             StringRedisTemplate redisTemplate,
-            StreamMessageListenerContainer<String, ObjectRecord<String, Event>> listenerContainer,
-            EventRepository eventRepository) {
+            StreamMessageListenerContainer<String, ObjectRecord<String, Event>> listenerContainer) {
         this.redisTemplate = redisTemplate;
         this.listenerContainer = listenerContainer;
-        this.eventRepository = eventRepository;
     }
 
     @PostConstruct
@@ -50,8 +47,7 @@ public class RedisEventConsumer implements StreamListener<String, ObjectRecord<S
     @Override
     public void onMessage(ObjectRecord<String, Event> record) {
         Event event = record.getValue();
-        eventRepository.save(event);
-        System.out.println("[consumer] saved: " + event);
+        System.out.println("[consumer] processed: " + event);
 
         redisTemplate.opsForStream().acknowledge(
                 RedisEventProducer.STREAM_KEY, GROUP_NAME, record.getId()

@@ -3,6 +3,9 @@ package org.example;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import org.springframework.data.domain.Range;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,17 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/events")
 public class EventController {
 
     private final RedisEventProducer producer;
-    private final EventRepository eventRepository;
+    private final StringRedisTemplate redisTemplate;
 
-    public EventController(RedisEventProducer producer, EventRepository eventRepository) {
+    public EventController(RedisEventProducer producer, StringRedisTemplate redisTemplate) {
         this.producer = producer;
-        this.eventRepository = eventRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     @PostMapping
@@ -49,13 +54,14 @@ public class EventController {
                 .body("Service temporarily unavailable. Please try again later.");
     }
 
+    // Redis CLI equivalent: XRANGE events - +
     @GetMapping
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
-    }
-
-    @GetMapping("/count")
-    public long getEventsCount() {
-        return eventRepository.count();
+    public List<Map<Object, Object>> getEvents() {
+        List<MapRecord<String, Object, Object>> records =
+                redisTemplate.opsForStream().range(RedisEventProducer.STREAM_KEY, Range.unbounded());
+        if (records == null) return List.of();
+        return records.stream()
+                .map(MapRecord::getValue)
+                .collect(Collectors.toList());
     }
 }
