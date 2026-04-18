@@ -1,5 +1,9 @@
 package org.example;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,10 +28,25 @@ public class EventController {
     }
 
     @PostMapping
+    @RateLimiter(name = "events", fallbackMethod = "rateLimitFallback")
+    @CircuitBreaker(name = "events", fallbackMethod = "circuitBreakerFallback")
     public ResponseEntity<String> receiveEvent(@RequestBody Event event) {
         event.setReceivedAt(Instant.now());
         producer.publish(event);
         return ResponseEntity.accepted().body("Accepted");
+    }
+
+    public ResponseEntity<String> rateLimitFallback(Event event, RequestNotPermitted e) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Retry-After", "1");
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .headers(headers)
+                .body("Rate limit exceeded. Retry after 1 second.");
+    }
+
+    public ResponseEntity<String> circuitBreakerFallback(Event event, Exception e) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Service temporarily unavailable. Please try again later.");
     }
 
     @GetMapping
